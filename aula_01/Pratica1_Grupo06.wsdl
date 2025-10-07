@@ -217,6 +217,27 @@
     <wsdl:part name="parameters" element="tns:CreateProductResponse"/>
   </wsdl:message>
 
+  <wsdl:message name="UpdateProductRequestMessage">
+    <wsdl:part name="parameters" element="tns:UpdateProductRequest"/>
+  </wsdl:message>
+  <wsdl:message name="UpdateProductResponseMessage">
+    <wsdl:part name="parameters" element="tns:UpdateProductResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="DeleteProductRequestMessage">
+    <wsdl:part name="parameters" element="tns:DeleteProductRequest"/>
+  </wsdl:message>
+  <wsdl:message name="DeleteProductResponseMessage">
+    <wsdl:part name="parameters" element="tns:DeleteProductResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="GetProductsRequestMessage">
+    <wsdl:part name="parameters" element="tns:GetProductsRequest"/>
+  </wsdl:message>
+  <wsdl:message name="GetProductsResponseMessage">
+    <wsdl:part name="parameters" element="tns:GetProductsResponse"/>
+  </wsdl:message>
+
   <!-- Fault message compartilhada -->
   <wsdl:message name="CommonFaultMessage">
     <wsdl:part name="fault" element="tns:CommonFault"/>
@@ -234,6 +255,27 @@
       <wsdl:fault name="CommonFault" message="tns:CommonFaultMessage"/>
     </wsdl:operation>
 
+    <wsdl:operation name="UpdateProduct">
+      <wsdl:documentation>Atualiza parcialmente os dados de um produto existente.</wsdl:documentation>
+      <wsdl:input message="tns:UpdateProductRequestMessage"/>
+      <wsdl:output message="tns:UpdateProductResponseMessage"/>
+      <wsdl:fault name="CommonFault" message="tns:CommonFaultMessage"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="DeleteProduct">
+      <wsdl:documentation>Deleta um produto existente.</wsdl:documentation>
+      <wsdl:input message="tns:DeleteProductRequestMessage"/>
+      <wsdl:output message="tns:DeleteProductResponseMessage"/>
+      <wsdl:fault name="CommonFault" message="tns:CommonFaultMessage"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="GetProducts">
+      <wsdl:documentation>Busca produtos com filtros opcionais.</wsdl:documentation>
+      <wsdl:input message="tns:GetProductsRequestMessage"/>
+      <wsdl:output message="tns:GetProductsResponseMessage"/>
+      <wsdl:fault name="CommonFault" message="tns:CommonFaultMessage"/>
+    </wsdl:operation>
+
   </wsdl:portType>
 
   <!-- =========================
@@ -244,6 +286,45 @@
     
     <wsdl:operation name="CreateProduct">
       <soap:operation soapAction="http://comprebem.com/marketplace/v1/CreateProduct" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="CommonFault">
+        <soap:fault name="CommonFault" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="UpdateProduct">
+      <soap:operation soapAction="http://comprebem.com/marketplace/v1/UpdateProduct" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="CommonFault">
+        <soap:fault name="CommonFault" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="DeleteProduct">
+      <soap:operation soapAction="http://comprebem.com/marketplace/v1/DeleteProduct" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="CommonFault">
+        <soap:fault name="CommonFault" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="GetProducts">
+      <soap:operation soapAction="http://comprebem.com/marketplace/v1/GetProducts" style="document"/>
       <wsdl:input>
         <soap:body use="literal"/>
       </wsdl:input>
