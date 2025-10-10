@@ -244,22 +244,6 @@
     <wsdl:part name="fault" element="tns:CommonFault"/>
   </wsdl:message>
 
-  <!-- REMOVER REMOVER REMOVER REMOVER 
-    CreateProduct
-        Entrada: dados mínimos do produto (productId, name, price, currency, category, status).
-        Saída: status.
-    UpdateProduct
-        Entrada: productId + campos atualizáveis (ex.: name?, price?, status?).
-        Saída: status.
-    DeleteProduct
-        Entrada: productId.
-        Saída: status.
-    GetProducts
-        Entrada: critérios opcionais (nameContains?, category?, status?, page, pageSize).
-        Saída: lista paginada (items[], page, pageSize, total).
-    REMOVER REMOVER REMOVER REMOVER 
-   -->
-
   <!-- =========================
        PORT TYPE
        ========================= -->
