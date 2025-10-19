@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: CompreBem Marketeplace API — Produtos
+  title: CompreBem Marketplace API — Produtos
   description: |-
        # API de Integração de Produtos (CompreBem)
         Esta API permite que os parceiros (lojistas) criem, atualizem, excluam e pesquisem produtos.
@@ -9,7 +9,7 @@ info:
     email: apiteam@comprebem.com.br
   version: 1.0.0
 externalDocs:
-  description: Mais sobre CompreBem Marketeplace API
+  description: Mais sobre CompreBem Marketplace API
   url: https://comprebem.com.br/apis
 servers:
   - url: https://api.comprebem.com.br/mkt-api/v1
@@ -20,7 +20,45 @@ tags:
       description: Find out more
       url: https://comprebem.com.br/apis
 paths:
-  /produtos:
+  /products:
+    post:
+      tags:
+        - Produtos
+      summary: Cadastra um novo produto
+      description: Cadastra um novo produto no marketplace.
+      operationId: cadastrarProduto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/ProdutoInput'
+      responses:
+        '201':
+          description: Produto cadastrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProdutoOutput'
+              example:
+                id: 9DAFB45372A8
+                name: iPhone 17
+                price: 18000
+                currency: BRL
+                category: Smart Phone
+                status: active
+                createdAt: "2025-10-19T23:14:04.887Z"
+                updatedAt: "2025-10-19T23:14:04.887Z"
+        '400':
+          description: Erro genérico.
+        '401':
+          description: Não autorizado.
+        '403':
+          description: Proibido para esse recurso.
+        '500':
+          description: Erro interno do servidor.
+        '503':
+          description: Serviço indisponível.
     get:
       tags:
         - Produtos
@@ -29,10 +67,39 @@ paths:
       operationId: obterProdutos
       parameters:
         - in: query
-          name: nomeProduto
+          name: productId
+          description: ID do produto.
+          schema:
+            type: string
+        - in: query
+          name: name
           description: Nome do produto.
           schema:
             type: string
+        - in: query
+          name: price
+          description: Preço do produto.
+          schema:
+            type: number
+            format: float
+        - in: query
+          name: currency
+          description: Moeda
+          schema:
+            type: string
+        - in: query
+          name: category
+          description: Categoria
+          schema:
+            type: string
+        - in: query
+          name: status
+          description: Status
+          schema:
+            type: string
+            enum:
+              - active
+              - inactive
         - $ref: '#/components/parameters/fields'
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
@@ -40,12 +107,12 @@ paths:
         '200':
           description: Successful operation
           headers:
-            contentRange:
+            X-Content-Range:
               description: Total de registros existentes.
               schema:
                 type: integer
                 format: int32
-            acceptRange:
+            X-Accept-Range:
               description: Quantidade máxima de registros que podem ser solicitado por requisição.
               schema:
                 type: integer
@@ -55,14 +122,146 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/produto'
+                  $ref: '#/components/schemas/ProdutoOutput'
         '401':
           description: Não autorizado.
         '403':
           description: Proibido para esse recurso.
         '500':
-          description: Erro Interno.
+          description: Erro interno do servidor.
+  /products/{id}:
+    put:
+      tags:
+        - Produtos
+      summary: Atualiza um produto
+      description: Atualiza um produto no marketplace.
+      operationId: atualizarProduto
+      parameters:
+        - name: id
+          in: path
+          description: ID do produto a ser atualizado
+          required: true
+          schema:
+            type: string
+          example: '1'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/ProdutoInput'
+      responses:
+        '200':
+          description: Produto atualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProdutoOutput'
+              example:
+                id: 9DAFB45372A8
+                name: iPhone 17
+                price: 18000
+                currency: BRL
+                category: Smart Phone
+                status: active
+                createdAt: "2025-10-19T23:14:04.887Z"
+                updatedAt: "2025-10-19T23:14:04.887Z"
+        '400':
+          description: Erro genérico.
+        '401':
+          description: Não autorizado.
+        '403':
+          description: Proibido para esse recurso.
+        '404':
+          description: Produto não encontrado.
+        '500':
+          description: Erro interno do servidor.
+        '503':
+          description: Serviço indisponível.
+    patch:
+      tags:
+        - Produtos
+      summary: Atualiza parcialmente um produto
+      description: Atualiza parcialmente um produto no marketplace.
+      operationId: atualizarParcialmenteProduto
+      parameters:
+        - name: id
+          in: path
+          description: ID do produto a ser atualizado
+          required: true
+          schema:
+            type: string
+          example: '1'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/ProdutoUpdate'
+      responses:
+        '200':
+          description: Produto atualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProdutoOutput'
+              example:
+                id: 9DAFB45372A8
+                name: iPhone 17
+                price: 18000
+                currency: BRL
+                category: Smart Phone
+                status: active
+                createdAt: "2025-10-19T23:14:04.887Z"
+                updatedAt: "2025-10-19T23:14:04.887Z"
+        '400':
+          description: Erro genérico.
+        '401':
+          description: Não autorizado.
+        '403':
+          description: Proibido para esse recurso.
+        '404':
+          description: Produto não encontrado.
+        '500':
+          description: Erro interno do servidor.
+        '503':
+          description: Serviço indisponível.
+    delete:
+      tags:
+        - Produtos
+      summary: Remove um produto
+      description: Remove um produto no marketplace.
+      operationId: removerProduto
+      parameters:
+        - name: id
+          in: path
+          description: ID do produto a ser removido
+          required: true
+          schema:
+            type: string
+          example: '1'
+      responses:
+        '204':
+          description: Produto removido com sucesso (sem conteúdo)
+        '400':
+          description: Erro genérico.
+        '401':
+          description: Não autorizado.
+        '403':
+          description: Proibido para esse recurso.
+        '404':
+          description: Produto não encontrado.
+        '500':
+          description: Erro interno do servidor.
+        '503':
+          description: Serviço indisponível.
 components:
+  securitySchemes:
+    ApiKeyAuth:    
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Chave de autenticação fornecida pelo CompreBem Marketplace.
   parameters:
     fields:
       name: _fields
@@ -89,9 +288,29 @@ components:
         type: integer
         format: int32
   schemas:
-    produto:
+    ProdutoInput:
       type: object
-      required: [id, name, price, currency, category, status]
+      required: [name, price, currency, category, status]
+      properties:
+        name:
+          type: string
+          example: iPhone 17
+        price:
+          type: number
+          format: float
+          example: 18000
+        currency:
+          type: string
+          example: BRL
+        category:
+          type: string
+          example: Smart Phone
+        status:
+          type: string
+          enum: [active, inactive]
+    ProdutoOutput:
+      type: object
+      required: [id, name, price, currency, category, status, createdAt, updatedAt]
       properties:
         id:
           type: string
@@ -108,13 +327,35 @@ components:
           example: BRL
         category:
           type: string
-          example: Samrt Phone
+          example: Smart Phone
         status:
           type: string
-          enum: [ATIVO, INATIVO]
+          enum: [active, inactive]
         createdAt:
           type: string
           format: date-time
         updatedAt:
           type: string
           format: date-time
+    ProdutoUpdate:
+      type: object
+      required: []
+      properties:
+        name:
+          type: string
+          example: iPhone 17
+        price:
+          type: number
+          format: float
+          example: 18000
+        currency:
+          type: string
+          example: BRL
+        category:
+          type: string
+          example: Smart Phone
+        status:
+          type: string
+          enum: [active, inactive]
+security:
+  - ApiKeyAuth: [] 
