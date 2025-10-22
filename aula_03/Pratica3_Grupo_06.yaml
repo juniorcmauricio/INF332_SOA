@@ -339,7 +339,6 @@ components:
           format: date-time
     ProdutoUpdate:
       type: object
-      required: []
       properties:
         name:
           type: string
