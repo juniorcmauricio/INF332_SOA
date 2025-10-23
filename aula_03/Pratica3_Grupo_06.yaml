@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: CompreBem Marketeplace API — Produtos
+  title: CompreBem Marketplace API — Produtos
   description: |-
        # API de Integração de Produtos (CompreBem)
         Esta API permite que os parceiros (lojistas) criem, atualizem, excluam e pesquisem produtos.
@@ -9,7 +9,7 @@ info:
     email: apiteam@comprebem.com.br
   version: 1.0.0
 externalDocs:
-  description: Mais sobre CompreBem Marketeplace API
+  description: Mais sobre CompreBem Marketplace API
   url: https://comprebem.com.br/apis
 servers:
   - url: https://api.comprebem.com.br/mkt-api/v1
@@ -20,19 +20,22 @@ tags:
       description: Find out more
       url: https://comprebem.com.br/apis
 paths:
-  /produtos:
+  /products: # Renomeado em inglês para seguir o padrão REST
     get:
       tags:
         - Produtos
       summary: Obtém produtos
       description: Obtém uma listagem de produtos. Alguns parâmetros para busca podem ser usados. Esse recurso também implementa paginação.
-      operationId: obterProdutos
+      operationId: getProducts # Renomeado para seguir o padrão REST
       parameters:
         - in: query
           name: nomeProduto
           description: Nome do produto.
           schema:
             type: string
+        - $ref: '#/components/parameters/name' # Parâmetro de query adicionado
+        - $ref: '#/components/parameters/category' # Parâmetro de query adicionado
+        - $ref: '#/components/parameters/status' # Parâmetro de query adicionado
         - $ref: '#/components/parameters/fields'
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
@@ -40,81 +43,526 @@ paths:
         '200':
           description: Successful operation
           headers:
-            contentRange:
-              description: Total de registros existentes.
+            X-Total-Count: # substituído contentRange por X-Total-Count
+              description: Total de registros existentes que correspondem à consulta.
               schema:
                 type: integer
-                format: int32
-            acceptRange:
-              description: Quantidade máxima de registros que podem ser solicitado por requisição.
+                format: int64
+            Link:
+              description: Links para paginação (next, previous, first, last).
               schema:
-                type: integer
-                format: int32
+                type: string
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/produto'
+                $ref: '#/components/schemas/ProductList'
+              example:
+                data:
+                  - productId: "PROD-9DAFB45372A8"
+                    name: "iPhone 17"
+                    price: 1800000
+                    currency: "BRL"
+                    category: "Smartphone"
+                    status: "ACTIVE"
+                    createdAt: "2025-05-23T10:00:00Z"
+                    updatedAt: "2025-07-02T10:00:00Z"
+                  - productId: "PROD-A1B2C3D4E5F6"
+                    name: "Samsung Galaxy S25"
+                    price: 750000
+                    currency: "BRL"
+                    category: "Smartphone"
+                    status: "INACTIVE"
+                    createdAt: "2025-06-15T14:30:00Z"
+                    updatedAt: "2025-07-01T09:15:00Z"
+                meta:
+                  total: 150
+                  limit: 20
+                  offset: 0
+                  hasNext: true
+                  hasPrevious: false
+        '400':
+          description: Requisição inválida.
+          $ref: '#/components/responses/BadRequest'
         '401':
           description: Não autorizado.
+          $ref: '#/components/responses/Unauthorized'
         '403':
           description: Proibido para esse recurso.
+          $ref: '#/components/responses/Forbidden'
         '500':
           description: Erro Interno.
+          $ref: '#/components/responses/InternalServerError'
+
+    post: # Adicionando operação POST para criação de produto.
+      tags:
+        - Produtos
+      summary: Cria um novo produto
+      description: Cria um novo produto com os dados fornecidos.
+      operationId: createProduct
+      requestBody:
+        description: Dados completos do produto a ser criado.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreate'
+      responses:
+        '201':
+          description: Produto criado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Requisição inválida.
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Não autorizado.
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Proibido para esse recurso.
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          description: Erro Interno.
+          $ref: '#/components/responses/InternalServerError'
+
+
+  /products/{productId}: # Path correto para operações individuais
+    
+    put: # Adicionando operação PUT para atualização de produto.
+      tags:
+        - Produtos
+      summary: Atualiza um produto existente
+      description: Atualiza as informações de um produto existente. Se o produto não for encontrado, retorna um erro 404.
+      operationId: updateProduct
+      parameters:
+        - $ref: '#/components/parameters/productId'
+      requestBody:
+        description: Dados completos do produto a serem atualizados.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductUpdate'
+      responses:
+        '200':
+          description: Produto atualizado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Requisição inválida.
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Não autorizado.
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Proibido para esse recurso.
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Produto não encontrado.
+          $ref: '#/components/responses/NotFound'
+        '500':
+          description: Erro Interno.
+          $ref: '#/components/responses/InternalServerError'
+
+    patch: # Adicionando operação PATCH para atualização parcial de produto.
+      tags:
+        - Produtos
+      summary: Atualiza parcialmente um produto existente
+      description: Atualiza parcialmente as informações de um produto existente. Se o produto não for encontrado, retorna um erro 404.
+      operationId: patchProduct
+      parameters:
+        - $ref: '#/components/parameters/productId'
+      requestBody:
+        description: Dados parciais do produto a serem atualizados.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductPatch'
+      responses:
+        '200':
+          description: Produto atualizado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Requisição inválida.
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Não autorizado.
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Proibido para esse recurso.
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Produto não encontrado.
+          $ref: '#/components/responses/NotFound'
+        '500':
+          description: Erro Interno.
+          $ref: '#/components/responses/InternalServerError'
+
+
+    delete: # Adicionando operação DELETE para exclusão de produto.
+      tags:
+        - Produtos
+      summary: Exclui um produto existente
+      description: Exclui um produto existente. Se o produto não for encontrado, retorna um erro 404.
+      operationId: deleteProduct
+      parameters:
+        - $ref: '#/components/parameters/productId'
+      responses:
+        '204':
+          description: Produto excluído com sucesso. (No Content)
+        '400':
+          description: Requisição inválida.
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Não autorizado.
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Proibido para esse recurso.
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Produto não encontrado.
+          $ref: '#/components/responses/NotFound'
+        '500':
+          description: Erro Interno.
+          $ref: '#/components/responses/InternalServerError'
+
+
 components:
   parameters:
+    productId: # Parâmetro de path adicionado
+      name: productId
+      in: path
+      description: Identificador (ID) único do produto.
+      required: true
+      schema:
+        type: string
+        pattern: "^PROD-[A-Z0-9]{12}$"
+        example: "PROD-9DAFB45372A8"
+    name: # Parâmetro de query adicionado
+      name: name
+      in: query
+      description: Filtra produtos cujo nome contenha o texto informado.
+      required: false
+      schema:
+        type: string
+        example: iPhone
+    category: # Parâmetro de query adicionado
+      name: category
+      in: query
+      description: Filtra produtos pela categoria informada.
+      required: false
+      schema:
+        type: string
+        example: Smartphone
+    status: # Parâmetro de query adicionado
+      name: status
+      in: query
+      description: Filtra produtos pelo status informado.
+      required: false
+      schema:
+        type: string
+        enum: [ACTIVE, INACTIVE]
+        example: ACTIVE
     fields:
-      name: _fields
+      name: fields # renomeado de _fields para fields
       description: |
-        Informar quais atributos devem retornar na resposta. Ex.: _fields=codigo,nome,endereco.
+        Informar quais atributos devem retornar na resposta. Ex.: fields=codigo,nome,endereco.
       in: query
       required: false
       schema:
         type: string
     limit:
-      name: _limit
+      name: limit # renomeado de _limit para limit
       description: Identificação da quantidade de registros a serem retornados.
       in: query
       required: false
       schema:
         type: integer
         format: int32
+        minimum: 1
+        maximum: 100 # exemplo de limite máximo adicionado
+        default: 20
     offset:
-      name: _offset
+      name: offset # renomeado de _offset para offset
       description: Identificação do registro inicial a ser retornado.
       in: query
       required: false
       schema:
         type: integer
         format: int32
+        minimum: 0
+        default: 0
+
+
   schemas:
-    produto:
+    # Schema para resposta completa do produto (GET/POST/PUT response)
+    Product: 
       type: object
-      required: [id, name, price, currency, category, status]
+      required: [productId, name, price, currency, category, status, createdAt, updatedAt]
       properties:
-        id:
+        productId: 
           type: string
-          example: 9DAFB45372A8
+          description: Identificador único do produto
+          example: "PROD-9DAFB45372A8"
+          pattern: "^PROD-[A-Z0-9]{12}$"
         name:
           type: string
-          example: iPhone 17
+          description: Nome do produto
+          example: "iPhone 17"
+          minLength: 2
+          maxLength: 100
         price:
           type: number
-          format: float
-          example: 18000
+          format: double
+          description: Preço do produto
+          example: 1800.00
+          minimum: 0.01 # 1 centavo
         currency:
           type: string
-          example: BRL
+          description: Moeda do preço do produto
+          example: "BRL"
+          enum: ["BRL", "USD", "EUR"]
         category:
           type: string
-          example: Samrt Phone
+          description: Categoria do produto
+          example: "Smartphone"
+          minLength: 2
+          maxLength: 50
         status:
           type: string
-          enum: [ATIVO, INATIVO]
+          description: Status do produto
+          enum: [ACTIVE, INACTIVE]
+          example: "ACTIVE"
         createdAt:
           type: string
           format: date-time
+          description: Data e hora de criação do produto
+          example: "2025-05-23T10:00:00Z"
+          readOnly: true
         updatedAt:
           type: string
           format: date-time
+          description: Data e hora da última atualização do produto
+          example: "2025-07-02T10:00:00Z"
+          readOnly: true
+
+    # Schema para criação de produto (POST request)
+    ProductCreate:
+      type: object
+      required: [name, price, currency, category, status]
+      properties:
+        name:
+          type: string
+          description: Nome do produto
+          example: "iPhone 17"
+          minLength: 2
+          maxLength: 100
+        price:
+          type: number
+          format: double
+          description: Preço do produto em centavos
+          example: 1800000
+          minimum: 0.01
+        currency:
+          type: string
+          description: Moeda do preço do produto
+          example: "BRL"
+          enum: ["BRL", "USD", "EUR"]
+        category:
+          type: string
+          description: Categoria do produto
+          example: "Smartphone"
+          minLength: 2
+          maxLength: 50
+        status:
+          type: string
+          description: Status do produto
+          enum: [ACTIVE, INACTIVE]
+          example: "ACTIVE"
+          default: "ACTIVE"
+
+    # Schema para atualização completa (PUT request)
+    ProductUpdate:
+      type: object
+      required: [name, price, currency, category, status]
+      properties:
+        name:
+          type: string
+          description: Nome do produto
+          example: "iPhone 17"
+          minLength: 2
+          maxLength: 100
+        price:
+          type: number
+          format: double
+          description: Preço do produto em centavos
+          example: 1800000
+          minimum: 0.01
+        currency:
+          type: string
+          description: Moeda do preço do produto
+          example: "BRL"
+          enum: ["BRL", "USD", "EUR"]
+        category:
+          type: string
+          description: Categoria do produto
+          example: "Smartphone"
+          minLength: 2
+          maxLength: 50
+        status:
+          type: string
+          description: Status do produto
+          enum: [ACTIVE, INACTIVE]
+          example: "ACTIVE"
+
+    # Schema para atualização parcial (PATCH request)
+    ProductPatch:
+      type: object
+      description: Dados parciais para atualização do produto
+      properties:
+        name:
+          type: string
+          description: Nome do produto
+          example: "iPhone 17 Pro"
+          minLength: 2
+          maxLength: 100
+        price:
+          type: number
+          format: double
+          description: Preço do produto em centavos
+          example: 2000000
+          minimum: 0.01
+        currency:
+          type: string
+          description: Moeda do preço do produto
+          example: "BRL"
+          enum: ["BRL", "USD", "EUR"]
+        category:
+          type: string
+          description: Categoria do produto
+          example: "Smartphone"
+          minLength: 2
+          maxLength: 50
+        status:
+          type: string
+          description: Status do produto
+          enum: [ACTIVE, INACTIVE]
+          example: "INACTIVE"
+
+    # Schema para lista paginada de produtos
+    ProductList:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          description: Lista de produtos
+          items:
+            $ref: '#/components/schemas/Product'
+        meta:
+          type: object
+          description: Metadados da paginação
+          required: [total, limit, offset, hasNext, hasPrevious]
+          properties:
+            total:
+              type: integer
+              description: Total de produtos que correspondem aos filtros
+              example: 150
+              minimum: 0
+            limit:
+              type: integer
+              description: Quantidade de registros por página
+              example: 20
+              minimum: 1
+              maximum: 100
+            offset:
+              type: integer
+              description: Número de registros ignorados
+              example: 0
+              minimum: 0
+            hasNext:
+              type: boolean
+              description: Indica se existe próxima página
+              example: true
+            hasPrevious:
+              type: boolean
+              description: Indica se existe página anterior
+              example: false
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: Código de erro específico da aplicação
+          example: "PRODUCT_NOT_FOUND"
+          pattern: "^[A-Z_]+$"
+        message:
+          type: string
+          description: Mensagem de erro descritiva
+          example: "Produto não encontrado com o ID fornecido"
+          minLength: 1
+          maxLength: 500
+
+
+  responses: # Adicionando respostas reutilizáveis
+    NotFound:
+      description: Recurso não encontrado.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: "RESOURCE_NOT_FOUND"
+            message: "O produto com o ID especificado não foi encontrado"
+            timestamp: "2025-10-22T14:30:00Z"
+    BadRequest:
+      description: Requisição inválida (devido a parâmetros incorretos ou inválidos).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: "VALIDATION_ERROR"
+            message: "O campo 'price' deve ser um número positivo"
+            timestamp: "2025-10-22T14:30:00Z"
+            details:
+              field: "price"
+              value: -1000
+    Unauthorized:
+      description: Não autorizado (autenticação necessária ou inválida).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: "UNAUTHORIZED"
+            message: "Token de autenticação inválido ou expirado"
+            timestamp: "2025-10-22T14:30:00Z"
+    Forbidden:
+      description: Proibido (autenticado, mas sem permissão para a ação).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: "FORBIDDEN"
+            message: "Você não tem permissão para executar esta ação"
+            timestamp: "2025-10-22T14:30:00Z"
+    InternalServerError:
+      description: Erro interno no servidor.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: "INTERNAL_ERROR"
+            message: "Ocorreu um erro inesperado no servidor. Tente novamente mais tarde"
+            timestamp: "2025-10-22T14:30:00Z"
