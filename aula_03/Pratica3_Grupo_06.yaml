@@ -58,10 +58,170 @@ paths:
                   $ref: '#/components/schemas/produto'
         '401':
           description: Não autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
         '403':
           description: Proibido para esse recurso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
         '500':
           description: Erro Interno.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+    post:
+      tags:
+        - Produtos
+      summary: Cria um novo produto
+      description: Cria um novo produto no marketplace.
+      operationId: criarProduto
+      requestBody:
+        description: Objeto produto para criação
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/produtoInput'
+      responses:
+        '201':
+          description: Produto criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/produto'
+        '400':
+          description: Requisição inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        '401':
+          description: Não autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        '500':
+          description: Erro Interno.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /produtos/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID do produto
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - Produtos
+      summary: Obtém um produto por id
+      description: Retorna os detalhes de um produto específico.
+      operationId: obterProdutoPorId
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/produto'
+        '404':
+          description: Produto não encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        '401':
+          description: Não autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        '500':
+          description: Erro Interno.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+    put:
+      tags:
+        - Produtos
+      summary: Atualiza um produto por id
+      description: Atualiza os dados de um produto existente.
+      operationId: atualizarProduto
+      requestBody:
+        description: Objeto produto com os campos a atualizar
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/produtoInput'
+      responses:
+        '200':
+          description: Produto atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/produto'
+        '400':
+          description: Requisição inválida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        '404':
+          description: Produto não encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        '401':
+          description: Não autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        '500':
+          description: Erro Interno.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+    delete:
+      tags:
+        - Produtos
+      summary: Remove um produto por id
+      description: Remove (exclui) um produto do marketplace.
+      operationId: deletarProduto
+      responses:
+        '204':
+          description: Produto excluído com sucesso (sem conteúdo)
+        '404':
+          description: Produto não encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        '401':
+          description: Não autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+        '500':
+          description: Erro Interno.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
 components:
   parameters:
     fields:
@@ -108,7 +268,7 @@ components:
           example: BRL
         category:
           type: string
-          example: Samrt Phone
+          example: Smart Phone
         status:
           type: string
           enum: [ATIVO, INATIVO]
@@ -118,3 +278,36 @@ components:
         updatedAt:
           type: string
           format: date-time
+    produtoInput:
+      type: object
+      required: [name, price, currency, category, status]
+      properties:
+        name:
+          type: string
+          example: iPhone 17
+        price:
+          type: number
+          format: float
+          example: 18000
+        currency:
+          type: string
+          example: BRL
+        category:
+          type: string
+          example: Smart Phone
+        status:
+          type: string
+          enum: [ATIVO, INATIVO]
+    errorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: ERR_NOT_FOUND
+        message:
+          type: string
+          example: Recurso não encontrado
+        details:
+          type: object
+          additionalProperties: true
